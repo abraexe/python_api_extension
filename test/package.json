@@ -9,13 +9,17 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "capabilities" : {
+    "completionProvider" : {
+        "resolveProvider": "true",
+        "triggerCharacters": ["."]
+  }},
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "test.helloWorld",
-        "title": "Hello World"
+        "command": "test.extension",
+        "title": "test-extension"
       }
     ]
   },
