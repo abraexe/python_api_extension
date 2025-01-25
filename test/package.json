@@ -28,15 +28,15 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.96.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
-    "eslint": "^9.16.0",
-    "typescript": "^5.7.2",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "acorn": "^8.14.0",
@@ -186,9 +186,9 @@
     "shebang-regex": "^3.0.0",
     "signal-exit": "^4.1.0",
     "stdin-discarder": "^0.1.0",
+    "string_decoder": "^1.1.1",
     "string-width": "^5.1.2",
     "string-width-cjs": "^4.2.3",
-    "string_decoder": "^1.1.1",
     "strip-ansi": "^7.1.0",
     "strip-ansi-cjs": "^6.0.1",
     "strip-json-comments": "^3.1.1",
