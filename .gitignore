@@ -4,3 +4,4 @@ test/.DS_Store
 examples/.DS_Store
 submodules/.DS_Store'
 examples/Blender/*
+*.DS_Store
