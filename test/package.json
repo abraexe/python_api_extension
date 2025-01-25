@@ -13,7 +13,9 @@
     "completionProvider" : {
         "resolveProvider": "true",
         "triggerCharacters": ["."]
-  }},
+    },
+    "hoverProvider": "true"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
