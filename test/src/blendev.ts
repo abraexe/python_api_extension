@@ -94,10 +94,34 @@ export function activate(context: vscode.ExtensionContext) {
 	const findreference = vscode.commands.registerCommand('blendev.find', () => {
 		const editor = vscode.window.activeTextEditor;
 		const position = editor?.selection.active;
-		if (editor && position) {
-			const line = editor.document.lineAt(position).text.slice(0, position.character);
-			let token: string = line.substring(line.lastIndexOf(" ")+1, position.character);
-			fileFetch.openFile(fileFetch.findDocsFile(token, context), context);
+		const document = editor?.document;
+		if (editor && position && document) {
+			var clausePos = position;
+			var clause = document.getText(document.getWordRangeAtPosition(position));
+			var oldClause = clause;
+			let clauses = [clause];
+			var fileAddress = "";
+			var pyName = "";
+
+			while (clause !== "bpy") {
+				clausePos = clausePos.translate(0, -1);
+				clause = document.getText(document.getWordRangeAtPosition(clausePos));
+				if (clause != oldClause) {
+					oldClause = clause;
+					clauses.unshift(clause);
+				}
+			}
+
+			if (clauses.length == 3) {
+				fileAddress = clauses.join('.');
+				pyName = clauses[2];
+			}
+			if (clauses.length == 4) {
+				fileAddress = clauses.join('.');
+				pyName = clauses[3];
+			}
+
+			fileFetch.openFile(fileFetch.findDocsFile(clauses.join('.'), context), context);
 		}
 	})
 
