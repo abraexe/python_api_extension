@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { json } from 'stream/consumers';
 
 export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsItem> {
     constructor(private workspaceRoot: string) {}
@@ -21,12 +20,13 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
         }
         // Limitations:
         // 1. It must be named 'docs.json'
-        // 2. It must be in the main workspace directory
+        // 2. It must be in the resources folder off of the main workspace directory
         // 3. Because of 1, there can only be one documentation file.
-        const jsonPath = path.join(this.workspaceRoot, 'docs.json');
+        const jsonPath = path.join(this.workspaceRoot, '/resources/docs.json');
+        
 
         if (!this.pathExists(jsonPath)) {
-            vscode.window.showInformationMessage('Workspace has no docs.json in top directory');
+            vscode.window.showInformationMessage('Workspace has no \"docs.json\" in resources directory. Make sure there is a \"resources\" directory within the main workspace directory, and that docs.json is in it.');
             return [];
         }
         const docsJson = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
@@ -85,25 +85,6 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
         return true;
     }
 }
-
-/*
-
-class Dependency extends vscode.TreeItem {
-  constructor(
-    public readonly label: string,
-    private version: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
-  ) {
-    super(label, collapsibleState);
-    this.tooltip = `${this.label}-${this.version}`;
-    this.description = this.version;
-  }
-
-  iconPath = {
-    light: vscode.Uri.parse(path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg')),
-    dark: vscode.Uri.parse(path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg'))
-  };
-}*/
 
 class DocsItem extends vscode.TreeItem {
     constructor( public readonly label: string, public readonly type: string, public readonly pos: Object, public readonly collapsibleState: vscode.TreeItemCollapsibleState) {
