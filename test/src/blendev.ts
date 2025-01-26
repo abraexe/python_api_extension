@@ -91,6 +91,16 @@ function parse_modules(dump: Object): Layer[] {
 
 export function activate(context: vscode.ExtensionContext) {
 
+	const findreference = vscode.commands.registerCommand('blendev.find', () => {
+		const editor = vscode.window.activeTextEditor;
+		const position = editor?.selection.active;
+		if (editor && position) {
+			const line = editor.document.lineAt(position).text.slice(0, position.character);
+			let token: string = line.substring(line.lastIndexOf(" ")+1, position.character);
+			fileFetch.openFile(fileFetch.findDocsFile(token, context), context);
+		}
+	})
+
 	// // ===== TREE VIEW =======
 	// const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
 	// ? vscode.workspace.workspaceFolders[0].uri.fsPath

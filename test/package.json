@@ -28,8 +28,8 @@
     },
     "commands": [
       {
-        "command": "blendev.disassemble",
-        "title": "Blendev - View Disassembled Python Source"
+        "command": "blendev.find",
+        "title": "Blendev - View Documentation"
       },
       {
         "command": "blendev.go",
