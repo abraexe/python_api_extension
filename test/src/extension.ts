@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		else {
 			let uri: vscode.Uri = result;
-			fileFetch.openFile(uri.toString().substring(7));
+			fileFetch.openFile(uri.toString().substring(7), context);
 		}
 		
 	}));

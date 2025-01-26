@@ -12,7 +12,17 @@ export class fileFetch {
         }
     }
 
-    public static openFile(path: string) {
-        vscode.workspace.openTextDocument(path).then( document => vscode.window.showTextDocument(document, { preview: false }));
+    public static openFile(path: string, context : vscode.ExtensionContext) {
+        // vscode.workspace.openTextDocument(path).then( document => vscode.window.showTextDocument(document, { preview: false }));
+        vscode.window.createWebviewPanel("docExplorer","View Documentation", 
+            {
+                viewColumn: vscode.ViewColumn.Active,
+                preserveFocus: true
+            },
+            {
+                enableScripts: false,
+                localResourceRoots:  [vscode.Uri.joinPath(context.extensionUri, '../'), vscode.Uri.joinPath(context.extensionUri, '../media')]
+            }
+        )
     }
 }

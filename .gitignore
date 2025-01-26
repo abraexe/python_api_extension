@@ -3,3 +3,4 @@ test/node_modules
 examples/Blender/rigify
 */out/*
 .vscode/*
+*/media/*
