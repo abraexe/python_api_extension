@@ -21,7 +21,7 @@
     "views": {
       "explorer": [
         {
-          "id": "bpy Modules",
+          "id": "bpyModules",
           "name": "bpy Modules"
         }
       ]

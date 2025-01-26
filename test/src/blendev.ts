@@ -112,10 +112,10 @@ export function activate(context: vscode.ExtensionContext) {
 	else {
 	 	let treeProvider = new DocumentationTreeProvider(rootPath);
 	 	vscode.window.registerTreeDataProvider(
-	 		'nodeDependencies',
+	 		'bpyModules',
 	 		treeProvider
 	 	);
-	 	context.subscriptions.push(vscode.window.createTreeView('nodeDependencies', {
+	 	context.subscriptions.push(vscode.window.createTreeView('bpyModules', {
 	 		treeDataProvider: treeProvider
 	 	}));
 	}
