@@ -58,7 +58,7 @@ export class fileFetch {
             fileFetch.webPanel.onDidDispose(() => { fileFetch.webPanel = undefined; }); 
         }
         // var dat = fs.readFileSync(filepath, 'utf8')
-        var dat = fs.readFileSync(vscode.Uri.file(filepath).with({scheme: 'vscode-resource'}).fsPath, "utf-8");
+        var dat = fs.readFileSync(vscode.Uri.joinPath(pathDir, filepath).with({scheme: 'vscode-resource'}).fsPath, "utf-8");
         dat = dat
             .replace(/(?<=\/css\" href=\")(.*?)(?=\")/g, 
                 fileFetch.webPanel.webview.asWebviewUri(vscode.Uri.file(fs.realpathSync(pathDir.path)))+"/$1");
