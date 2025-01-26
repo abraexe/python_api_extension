@@ -138,16 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
 let disposable2 = vscode.languages.registerHoverProvider('python', {
   provideHover(document, position) {
 
-		let raw_data : string = "";
-		try {
-			raw_data = fs.readFileSync(path.join(__dirname, '../data.json'), 'utf8');
-		} catch (err) {
-			console.error(err);
-		}
 		
-		
-		let dump : Object = JSON.parse(raw_data);
-		let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
 		
 		// console.log('\nbegin data\n');
 		// console.log(data);
@@ -198,7 +189,7 @@ let disposable2 = vscode.languages.registerHoverProvider('python', {
 		// const html = vscode.Uri.file(path.join(context.extensionPath,item,path.sep)).split('_static').join('.._static');
 		
 
-	const htmlUri = vscode.Uri.file(path.join(context.extensionPath,path.sep,'../blender_python_reference_4_3/')).path + fileAddress + '.html';
+	const htmlUri = vscode.Uri.file(path.join(context.extensionPath,path.sep,'media',path.sep,'blender_python_reference_4_3',path.sep)).path + fileAddress + '.html';
 	console.log(htmlUri);
 	const htmlFull = importTextFileSync(htmlUri);
 	// console.log(htmlFull.replaceAll("\n\n","\n"));
