@@ -46,9 +46,6 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
             }
             else if (pos) {                
                 Object.keys(pos).map(item => {
-                    console.log(pos);
-                    console.log(typeof pos);
-                    
                     treeItems.push(new DocsItem(item, "", pos[item], vscode.TreeItemCollapsibleState.Collapsed));
 
                     scanJsonRecur(pos[item], pos);
@@ -62,9 +59,6 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
             {  treeItems.push(new DocsItem(pos, "", pos, vscode.TreeItemCollapsibleState.None)); }
             else if (pos) {                
                 Object.keys(pos).map(item => {
-                    console.log(pos);
-                    console.log(typeof pos);
-                    
                     if (typeof pos[item] === 'string' || Object.keys(pos[item]).length === 0)
                     {
                         treeItems.push(new DocsItem(item, pos[item], pos[item], vscode.TreeItemCollapsibleState.None));
