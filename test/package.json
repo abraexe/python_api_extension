@@ -34,6 +34,10 @@
       {
         "command": "blendev.go",
         "title": "Start Blendev"
+      },
+      {
+        "command": "blendev.hover",
+        "title": "Blendev - Enable hover"
       }
     ]
   },
