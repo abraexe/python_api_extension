@@ -9,6 +9,13 @@
   "categories": [
     "Other"
   ],
+  "capabilities" : {
+    "completionProvider" : {
+        "resolveProvider": "true",
+        "triggerCharacters": ["."]
+    },
+    "hoverProvider": "true"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "views": {
@@ -27,6 +34,10 @@
       {
         "command": "test.disassemble",
         "title": "View Disassembled Python Source"
+      },
+      {
+        "command": "test.extension",
+        "title": "test-extension"
       }
     ]
   },

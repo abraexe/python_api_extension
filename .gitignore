@@ -1,6 +1,6 @@
 test/node_modules
 .DS_Store
-examples/Blender/rigify
+examples/Blender/*
 */out/*
 .vscode/*
 */media/*
