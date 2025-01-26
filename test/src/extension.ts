@@ -6,11 +6,15 @@ import path from 'path';
 
 interface Dictionary {
 	[key: string]: string
-  }
+}
+
+interface Dictionary_Module {
+	[key: string]: Module
+}
 
 interface Layer {
 	module: Module;
-	children: Module[];
+	children: Dictionary_Module;
 }
 
 interface Module {
@@ -38,9 +42,9 @@ function parse_modules(dump: Object): Layer[] {
 				s_methods: Object.values(dump)[j],
 				functions: Object.values(dump)[j],
 			},
-			children: []
+			children: {}
 		};
-		let arr : Module[] = [];
+		let arr : Dictionary_Module = {};
 		for(let i=0; i<Object.values(Object.values(dump)[j]).length; i++)
 		{
 			let key : string = Object.keys(Object.values(dump)[j])[i];
@@ -54,7 +58,7 @@ function parse_modules(dump: Object): Layer[] {
 					s_methods: Object.values(value)[3] as Dictionary,
 					functions: Object.values(value)[4] as Dictionary,
 				};
-				arr.push(m);
+				arr[m.name] = m;
 	 		}
 			else{
 				if(key==="EXT_ATTRIBUTES"&&value!==null)
@@ -127,13 +131,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let raw_data : string = "";
 	try {
-		raw_data = fs.readFileSync(path.join(__dirname, '../data.json'), 'utf8');
+		raw_data = fs.readFileSync(path.join(__dirname, '../../resources/docs.json'), 'utf8');
 	} catch (err) {
 		console.error(err);
 	}
 
 	let dump : Object = JSON.parse(raw_data);
 	let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
+	// comment statement for aaron
+	//console.log(data[0].children['ParticleSystem']);
 	
 	const completion = vscode.languages.registerCompletionItemProvider(
 		'python',
@@ -171,14 +177,13 @@ export function activate(context: vscode.ExtensionContext) {
 								Object.keys(child.module.functions).forEach(function (gchild) {
 									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Method));
 								});
-								child.children.forEach(function (gchild) {
-									arr.push(new vscode.CompletionItem(gchild.name, vscode.CompletionItemKind.Property));
+								Object.keys(child.children).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Property));
 								});
 								return;
 							}
 							else{
-								// this is probably a task for morning abra
-								child.children.forEach(function (gchild) {
+								Object.values(child.children).forEach(function (gchild) {
 									if(token.endsWith('bpy.' + child.module.name + "." + gchild.name + ".")){
 										Object.keys(gchild.attributes).forEach(function (ggchild) {
 											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Property));
