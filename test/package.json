@@ -1,7 +1,7 @@
 {
-  "name": "test",
-  "displayName": "test",
-  "description": "testtest",
+  "name": "blendev",
+  "displayName": "blendev",
+  "description": "blendev extension",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -16,12 +16,28 @@
     },
     "hoverProvider": "true"
   },
-  "main": "./out/extension.js",
+  "main": "./out/blendev.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "bpyModules",
+          "name": "bpy Modules"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "test.extension",
-        "title": "test-extension"
+        "command": "blendev.find",
+        "title": "Blendev - View Documentation"
+      },
+      {
+        "command": "blendev.go",
+        "title": "Start Blendev"
+      },
+      {
+        "command": "blendev.hover",
+        "title": "Blendev - Enable hover"
       }
     ]
   },
