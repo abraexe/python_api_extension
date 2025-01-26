@@ -3,4 +3,3 @@ test/node_modules
 examples/Blender/*
 */out/*
 .vscode/*
-*/media/*
