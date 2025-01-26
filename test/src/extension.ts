@@ -7,6 +7,11 @@ interface Dictionary {
 	[key: string]: string
   }
 
+interface Layer {
+	module: Module;
+	children: Module[];
+}
+
 interface Module {
 	name: string;
 	attributes: Dictionary;
@@ -36,12 +41,25 @@ interface Module {
 // 	return_type: []
 // };
 
-function parse_modules(dump: Object): Module[] {
+function parse_modules(dump: Object): Layer[] {
+	let parsed : Layer[] = [];
 	const reserved = [String('EXT_ATTRIBUTES'), String('EXT_STATIC_ATTRIBUTES'), String('EXT_METHODS'), 
 		String('EXT_STATIC_METHODS'), 'EXT_FUNCTIONS'];
-	let arr : Module[] = [];
+	const layers = ['types', 'ops', 'context', 'app', 'msgbus', 'utils', 'path', 'props', 'data'];
 	for(let j=0; j < Object.values(dump).length; j++)
 	{
+		let l : Layer = {
+			module : {
+				name: layers[j],
+				attributes: Object.values(dump)[j],
+				s_attributes: Object.values(dump)[j],
+				methods: Object.values(dump)[j],
+				s_methods: Object.values(dump)[j],
+				functions: Object.values(dump)[j],
+			},
+			children: []
+		};
+		let arr : Module[] = [];
 		for(let i=0; i<Object.values(Object.values(dump)[j]).length; i++)
 		{
 			let key : string = Object.keys(Object.values(dump)[j])[i];
@@ -57,9 +75,33 @@ function parse_modules(dump: Object): Module[] {
 				};
 				arr.push(m);
 	 		}
+			else{
+				if(key==="EXT_ATTRIBUTES")
+				{
+					l.module.attributes = Object(Object.values(value)) as Dictionary;
+				}
+				else if(key==="EXT_STATIC_ATTRIBUTES")
+				{
+					l.module.s_attributes = Object(Object.values(value)) as Dictionary;
+				}
+				else if(key==="EXT_METHODS")
+				{
+					l.module.methods = Object(Object.values(value)) as Dictionary;
+				}
+				else if(key==="EXT_STATIC_METHODS")
+				{
+					l.module.s_methods = Object(Object.values(value)) as Dictionary;
+				}
+				else if(key==="EXT_FUNCTIONS")
+				{
+					l.module.functions = Object(Object.values(value)) as Dictionary;
+				}
+			}
 		}
+		l.children = arr;
+		parsed.push(l);
 	}
-	return arr;
+	return parsed;
 }
 
 // old from before
@@ -130,7 +172,8 @@ export function activate(context: vscode.ExtensionContext) {
 	// // layer 2: step down from types: collection of modules usually, different for utils, etc
 	// // implicit in function calls
 	// // layer 3: modules
-	let modules : Module[] = parse_modules(Object.values(Object.values(dump)[0]));
+	let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
+	console.log(data);
 	
 	const completion = vscode.languages.registerCompletionItemProvider(
 		'python',
@@ -141,21 +184,20 @@ export function activate(context: vscode.ExtensionContext) {
 				let token: string = line.substring(line.lastIndexOf(" ")+1, position.character);
 
 				if (token.startsWith('bpy.types.ParticleSystem.')) {
-					console.log("completion if");
 					let arr: vscode.CompletionItem[] = [];
-					Object.keys(modules[0].attributes).forEach(function (child) {
+					Object.keys(data[0].children[0].attributes).forEach(function (child) {
 						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Property));
 					});
-					Object.keys(modules[0].s_attributes).forEach(function (child) {
+					Object.keys(data[0].children[0].s_attributes).forEach(function (child) {
 						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Property));
 					});
-					Object.keys(modules[0].methods).forEach(function (child) {
+					Object.keys(data[0].children[0].methods).forEach(function (child) {
 						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
 					});
-					Object.keys(modules[0].s_methods).forEach(function (child) {
+					Object.keys(data[0].children[0].s_methods).forEach(function (child) {
 						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
 					});
-					Object.keys(modules[0].functions).forEach(function (child) {
+					Object.keys(data[0].children[0].functions).forEach(function (child) {
 						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
 					});
 					// old from before
