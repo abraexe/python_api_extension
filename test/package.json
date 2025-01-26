@@ -1,7 +1,7 @@
 {
-  "name": "test",
-  "displayName": "test",
-  "description": "testtest",
+  "name": "blendev",
+  "displayName": "blendev",
+  "description": "blendev extension",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -16,7 +16,7 @@
     },
     "hoverProvider": "true"
   },
-  "main": "./out/extension.js",
+  "main": "./out/blendev.js",
   "contributes": {
     "views": {
       "explorer": [
@@ -28,16 +28,12 @@
     },
     "commands": [
       {
-        "command": "test.helloWorld",
-        "title": "Hello World"
+        "command": "blendev.disassemble",
+        "title": "Blendev - View Disassembled Python Source"
       },
       {
-        "command": "test.disassemble",
-        "title": "View Disassembled Python Source"
-      },
-      {
-        "command": "test.extension",
-        "title": "test-extension"
+        "command": "blendev.go",
+        "title": "Start Blendev"
       }
     ]
   },
