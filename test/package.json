@@ -21,8 +21,8 @@
     "views": {
       "explorer": [
         {
-          "id": "nodeDependencies",
-          "name": "nodeDependencies"
+          "id": "bpy Modules",
+          "name": "bpy Modules"
         }
       ]
     },
