@@ -26,6 +26,10 @@ interface Module {
 	functions: Dictionary;
 };
 
+function importTextFileSync(filePath: string): string {
+	return fs.readFileSync(fs.realpathSync(filePath), 'utf-8');
+}
+
 function parse_modules(dump: Object): Layer[] {
 	let parsed : Layer[] = [];
 	const reserved = [String('EXT_ATTRIBUTES'), String('EXT_STATIC_ATTRIBUTES'), String('EXT_METHODS'), 
@@ -249,22 +253,175 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 		'.'
 	);
-	const hover = vscode.languages.registerHoverProvider(
-		'python', 
-		{
-			provideHover(document, position, token) {
-				const range = document.getWordRangeAtPosition(position);
-				const word = document.getText(range);
-				const line = document.lineAt(position).text;
-				if (word === "join" && line.search("os.path.")!==-1) {
-					return new vscode.Hover({
-						language: "python",
-						value: "hover"
-					});
+	// const hover = vscode.languages.registerHoverProvider(
+	// 	'python', 
+	// 	{
+	// 		provideHover(document, position, token) {
+	// 			const range = document.getWordRangeAtPosition(position);
+	// 			const word = document.getText(range);
+	// 			const line = document.lineAt(position).text;
+	// 			if (word === "join" && line.search("os.path.")!==-1) {
+	// 				return new vscode.Hover({
+	// 					language: "python",
+	// 					value: "hover"
+	// 				});
+	// 			}
+	// 		}
+    // 	}
+	// );
+	// const popup = vscode.commands.registerCommand('blendev.hover', () => {
+	// 		vscode.window.showInformationMessage('hover running');
+	// 	});
+		
+		/*
+		const completion = vscode.languages.registerCompletionItemProvider(
+			'python',
+			{
+				provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+	
+					const linePrefix = document.lineAt(position).text.slice(0, position.character);
+					if (!linePrefix.endsWith('sample.')) {
+						return undefined;
+					}
+	
+					return [
+						new vscode.CompletionItem('fill', vscode.CompletionItemKind.Method),
+						new vscode.CompletionItem('complete', vscode.CompletionItemKind.Method),
+					];
+				}
+			},
+			'.'
+		);*/
+		/*
+		const hover = vscode.languages.registerHoverProvider(
+			'python', 
+			{
+				provideHover(document, position, token) {
+					const range = document.getWordRangeAtPosition(position);
+					const word = document.getText(range);
+					const line = document.lineAt(position).text;
+					if (word === "join" && line.search("os.path.")!==-1) {
+						return new vscode.Hover({
+							language: "python",
+							value: "hover"
+						});
+					}
 				}
 			}
-    	}
-	);
+		);
+		context.subscriptions.push(popup, completion);
+	*/
+	let disposable2 = vscode.languages.registerHoverProvider('python', {
+	  provideHover(document, position) {
+	
+			
+			
+			// console.log('\nbegin data\n');
+			// console.log(data);
+			// console.log('\nend data\n');
+	
+			var clausePos = position;
+			var clause = document.getText(document.getWordRangeAtPosition(position));
+			var oldClause = clause;
+			let clauses = [clause];
+			var fileAddress = "";
+			var pyName = "";
+	
+			console.log(clause);
+	
+			while (clause !== "bpy") {
+				clausePos = clausePos.translate(0, -1);
+				clause = document.getText(document.getWordRangeAtPosition(clausePos));
+				if (clause != oldClause) {
+					oldClause = clause;
+					clauses.unshift(clause);
+				}
+			}
+	
+			if (clauses.length == 3) {
+				fileAddress = clauses.join('.');
+				pyName = clauses[2];
+			}
+			if (clauses.length == 4) {
+				fileAddress = clauses.join('.');
+				pyName = clauses[3];
+			}
+			console.log(clauses);
+	
+	
+			
+	
+	
+			// const foundItem = false;
+	
+			// while(!foundItem) {
+	
+			// }
+	
+			// const item = 
+	
+			// const path = require('path');
+	
+			// const html = vscode.Uri.file(path.join(context.extensionPath,item,path.sep)).split('_static').join('.._static');
+			
+	
+		const htmlUri = vscode.Uri.file(path.join(context.extensionPath,path.sep,'media',path.sep,'blender_python_reference_4_3',path.sep)).path + fileAddress + '.html';
+		console.log(htmlUri);
+		const htmlFull = importTextFileSync(htmlUri);
+		// console.log(htmlFull.replaceAll("\n\n","\n"));
+		
+	// For 'beginningTarget<thing>
+	var begTarFunc = (htmlFull.indexOf('py function') < 0)? 999995 : htmlFull.substring(0,htmlFull.indexOf('py function')).split('\n').length-1;
+	var begTarMthd = (htmlFull.indexOf('py method') < 0)? 999996 : htmlFull.substring(0,htmlFull.indexOf('py method')).split('\n').length-1;
+	var begTarClss = (htmlFull.indexOf('py class') < 0)? 999997 : htmlFull.substring(0,htmlFull.indexOf('py class')).split('\n').length-1;
+	var begTarAttr = (htmlFull.indexOf('py attribute') < 0)? 999998 : htmlFull.substring(0,htmlFull.indexOf('py attribute')).split('\n').length-1;
+	var begTarData = (htmlFull.indexOf('py data') < 0)? 999999 : htmlFull.substring(0,htmlFull.indexOf('py data')).split('\n').length-1;
+	var endTarDocs = (htmlFull.indexOf('\n</dd></dl>\n\n</section>') < 0)? htmlFull.substring(0,htmlFull.indexOf('\n</dd></dl>\n\n<section')).split('\n').length-1 : htmlFull.substring(0,htmlFull.indexOf('\n</dd></dl>\n\n</section>')).split('\n').length-1;
+	
+	console.log(Math.min(begTarFunc,begTarMthd,begTarClss,begTarAttr,begTarData));
+	console.log(endTarDocs)
+	console.log(htmlFull.split('\n')[endTarDocs])
+	
+	const htmlShort = htmlFull.split('\n').slice(0,6-1).join('\n') + '\n' + htmlFull.split('\n').slice(11,46-1).join('\n') + '\n' + htmlFull.split('\n').slice(Math.min(begTarFunc,begTarMthd,begTarClss,begTarAttr,begTarData), endTarDocs-1).join('\n');
+	console.log("short");
+	console.log(htmlShort);
+	const begPyName = (htmlShort.indexOf(pyName) < 0)? 999993 : htmlShort.substring(0,htmlShort.indexOf(pyName)).split('\n').length-2;
+	
+	begTarFunc = (htmlShort.indexOf('py function') < 0)? 999995 : htmlShort.substring(0,htmlShort.indexOf('py function')).split('\n').length-1;
+	begTarMthd = (htmlShort.indexOf('py method') < 0)? 999996 : htmlShort.substring(0,htmlShort.indexOf('py method')).split('\n').length-1;
+	begTarClss = (htmlShort.indexOf('py class') < 0)? 999997 : htmlShort.substring(0,htmlShort.indexOf('py class')).split('\n').length-1;
+	begTarAttr = (htmlShort.indexOf('py attribute') < 0)? 999998 : htmlShort.substring(0,htmlShort.indexOf('py attribute')).split('\n').length-1;
+	begTarData = (htmlShort.indexOf('py data') < 0)? 999999 : htmlShort.substring(0,htmlShort.indexOf('py data')).split('\n').length-1;
+	endTarDocs = (htmlShort.indexOf('\n</dd></dl>\n') < 0)? htmlFull.substring(0,htmlFull.indexOf('\n</dd></dl>\n')).split('\n').length-1 : htmlShort.substring(0,htmlFull.indexOf('\n</dd></dl>\n')).split('\n').length-1;
+	
+	console.log("shorter");
+	console.log(endTarDocs);
+	
+	const htmlShorter = htmlShort.split('\n').slice(0,Math.min(begTarFunc,begTarMthd,begTarClss,begTarAttr,begTarData)).join('\n') + htmlShort.split('\n').slice(begPyName).join('\n');
+	console.log(htmlShorter);
+	
+	endTarDocs = (htmlShorter.indexOf('\n</dd></dl>\n') < 0)? 999999 : htmlShorter.substring(0,htmlFull.indexOf('\n</dd></dl>\n')).split('\n').length-1;
+	console.log("shortest");
+	console.log(endTarDocs);
+	const htmlShortest = htmlShorter.split('\n').slice(0,endTarDocs).join('\n');
+	console.log(htmlShortest);
+	
+	const htmlFinal = (htmlShortest + "\n</dd></dl>\n\n</section>\n\n</html>").replaceAll("\n\n","\n").replaceAll("#","");
+	console.log("FINAL");
+	console.log(htmlFinal);
+	
+	const content = new vscode.MarkdownString(htmlFinal);
+	
+		content.supportHtml = true;
+	
+		content.isTrusted = true;
+	
+			content.supportThemeIcons = true;
+	
+		return new vscode.Hover(content, new vscode.Range(position, position));
+		}
+		});
+		context.subscriptions.push(disposable2);
 
-	context.subscriptions.push(popup, completion);
+	context.subscriptions.push(popup, completion,);
 }
