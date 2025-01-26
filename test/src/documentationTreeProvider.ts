@@ -40,21 +40,22 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
         scanJsonActual(docsJson, undefined);
 
         // ** Magic Recurive JSON parse **
-        function scanJsonRecur(pos: any, prev: any) {
-            if (typeof pos == 'string') 
+        /*function scanJsonRecur(pos: any, prev: any) {
+            if (typeof pos === 'string') {
                 treeItems.push(new DocsItem(pos, "", pos, vscode.TreeItemCollapsibleState.None));
+            }
             else if (pos) {                
                 Object.keys(pos).map(item => {
                     treeItems.push(new DocsItem(item, "", pos[item], vscode.TreeItemCollapsibleState.Collapsed));
 
                     scanJsonRecur(pos[item], pos);
-                }) 
+                });
             }
-        }
+        }*/
 
         // DONT ASK ME WHY
         function scanJsonActual(pos: any, prev: any) {
-            if (typeof pos == 'string') 
+            if (typeof pos === 'string') 
                 treeItems.push(new DocsItem(pos, "", pos, vscode.TreeItemCollapsibleState.None));
             else if (pos) {                
                 Object.keys(pos).map(item => {
@@ -62,7 +63,7 @@ export class NodeDependenciesProvider implements vscode.TreeDataProvider<DocsIte
                         treeItems.push(new DocsItem(item, pos[item], pos[item], vscode.TreeItemCollapsibleState.None));
                     else
                         treeItems.push(new DocsItem(item, "", pos[item], vscode.TreeItemCollapsibleState.Collapsed));
-                }) 
+                });
             }
         }
 

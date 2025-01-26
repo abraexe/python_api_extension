@@ -89,37 +89,38 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// ===== TREE VIEW =======
 	const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-    ? vscode.workspace.workspaceFolders[0].uri.fsPath
-    : undefined;
+	? vscode.workspace.workspaceFolders[0].uri.fsPath
+	: undefined;
 
 	if (rootPath === undefined) {
-		vscode.window.showErrorMessage("There is no open workspace to search. Open a folder to begin.");
-	} else {
-		let treeProvider = new NodeDependenciesProvider(rootPath);
-		vscode.window.registerTreeDataProvider(
-			'nodeDependencies',
-			treeProvider
-		  );
-		context.subscriptions.push(vscode.window.createTreeView('nodeDependencies', {
-			treeDataProvider: treeProvider
-		  }));
+	 	vscode.window.showErrorMessage("There is no open workspace to search. Open a folder to begin.");
+	} 
+	else {
+	 	let treeProvider = new NodeDependenciesProvider(rootPath);
+	 	vscode.window.registerTreeDataProvider(
+	 		'nodeDependencies',
+	 		treeProvider
+	 	);
+	 	context.subscriptions.push(vscode.window.createTreeView('nodeDependencies', {
+	 		treeDataProvider: treeProvider
+	 	}));
 	}
 
 	
 	// ======= OPEN A FILE IN TEXT EDITOR =======
-	context.subscriptions.push(vscode.commands.registerCommand('test.disassemble', async () => {
-		// This function is a mess
-		let result;
-		await vscode.window.showOpenDialog(fileFetch.dialogOptions).then(m => result = m);
-		if (result === undefined) {
-			vscode.window.showErrorMessage("File not found!");
-		}
-		else {
-			let uri: vscode.Uri = result;
-			fileFetch.openFile(uri.toString().substring(7), context);
-		}
+	// context.subscriptions.push(vscode.commands.registerCommand('test.disassemble', async () => {
+	// 	// This function is a mess
+	// 	let result;
+	// 	await vscode.window.showOpenDialog(fileFetch.dialogOptions).then(m => result = m);
+	// 	if (result === undefined) {
+	// 		vscode.window.showErrorMessage("File not found!");
+	// 	}
+	// 	else {
+	// 		let uri: vscode.Uri = result;
+	// 		fileFetch.openFile(uri.toString().substring(7), context);
+	// 	}
 		
-	}));
+	// }));
 	const popup = vscode.commands.registerCommand('test.extension', () => {
 		vscode.window.showInformationMessage('test running :3');
 	});
@@ -133,7 +134,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let dump : Object = JSON.parse(raw_data);
 	let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
-	console.log(data);
 	
 	const completion = vscode.languages.registerCompletionItemProvider(
 		'python',
@@ -149,7 +149,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (token.startsWith('bpy.')) {
 					if(token.endsWith('bpy.')){
 						data.forEach(function (child) {
-							arr.push(new vscode.CompletionItem(child.module.name, vscode.CompletionItemKind.Property));
+							arr.push(new vscode.CompletionItem(child.module.name, vscode.CompletionItemKind.Module));
 						});
 					}
 					else{
@@ -174,9 +174,31 @@ export function activate(context: vscode.ExtensionContext) {
 								child.children.forEach(function (gchild) {
 									arr.push(new vscode.CompletionItem(gchild.name, vscode.CompletionItemKind.Property));
 								});
+								return;
 							}
 							else{
 								// this is probably a task for morning abra
+								child.children.forEach(function (gchild) {
+									if(token.endsWith('bpy.' + child.module.name + "." + gchild.name + ".")){
+										Object.keys(gchild.attributes).forEach(function (ggchild) {
+											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Property));
+										});
+										Object.keys(gchild.s_attributes).forEach(function (ggchild) {
+											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Property));
+										});
+										Object.keys(gchild.methods).forEach(function (ggchild) {
+											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Method));
+										});
+										Object.keys(gchild.s_methods).forEach(function (ggchild) {
+											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Method));
+										});
+										Object.keys(gchild.functions).forEach(function (ggchild) {
+											arr.push(new vscode.CompletionItem(ggchild, vscode.CompletionItemKind.Method));
+										});
+									}
+								});
+								return;
+								
 							}
 						}
 						});
@@ -207,71 +229,3 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(popup, completion);
 }
-
-// interfaces to work with hard coded values from before we got hardcoded values to test with
-// interface Struct
-// {
-//     name: string;
-//     children: Struct[];
-// 	return_type: Struct[];
-// }
-// const NULL : Struct = 
-// {
-//     name: "",
-//     children: [],
-// 	return_type: []
-// };
-// const bpy : Struct =
-// {
-//     name: "bpy",
-//     children: [],
-// 	return_type: []
-// };
-// old from before
-// function trav_children(node: Struct, token: string): Struct {
-// 	let substring: string = node.name;
-// 	while(node.children.length !== 0 && node.return_type.length === 0){
-// 		if(token.endsWith(node.name + "."))
-// 		{
-// 			return node;
-// 		}
-// 		let flag: boolean = false;
-// 		for (let child of node.children)
-// 		{
-// 			if(token.startsWith(substring + "." + child.name + ".")
-// 				|| token.startsWith(substring + "." + child.name + "("))
-// 			{
-// 				flag = true;
-// 				if(child.return_type.length !== 0)
-// 				{
-// 					// to do : make this work if functions are nested in one another
-// 					let token_end: string = token.substring(substring.length);
-// 					let child_string: string = token_end.substring(token_end.indexOf(child.name), token_end.indexOf(")")+1);
-	
-// 					token = token.substring(0,substring.length) + "." + child.return_type[0].name + token.substring(substring.length + child_string.length + 1);
-// 					substring += "." + child.return_type[0].name;
-// 					node = child.return_type[0];
-
-// 					if(token.endsWith(child.return_type[0].name + "."))
-// 					{
-// 						return child.return_type[0];
-// 					}
-// 				}
-// 				else
-// 				{
-// 					substring += "." + child.name;
-// 					node = child;
-
-// 					if(token.endsWith(child.name + "."))
-// 					{
-// 						return child;
-// 					}
-// 				}
-// 			}
-// 		}
-// 		if(!flag){
-// 			return NULL;
-// 		}
-// 	}
-// 	return node;
-// }
