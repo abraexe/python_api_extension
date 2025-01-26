@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import path from 'path';
-import { arrayBuffer } from 'stream/consumers';
 
 interface Dictionary {
 	[key: string]: string
@@ -20,26 +19,6 @@ interface Module {
 	s_methods: Dictionary;
 	functions: Dictionary;
 };
-
-// interfaces to work with hard coded values from before we got hardcoded values to test with
-// interface Struct
-// {
-//     name: string;
-//     children: Struct[];
-// 	return_type: Struct[];
-// }
-// const NULL : Struct = 
-// {
-//     name: "",
-//     children: [],
-// 	return_type: []
-// };
-// const bpy : Struct =
-// {
-//     name: "bpy",
-//     children: [],
-// 	return_type: []
-// };
 
 function parse_modules(dump: Object): Layer[] {
 	let parsed : Layer[] = [];
@@ -76,25 +55,25 @@ function parse_modules(dump: Object): Layer[] {
 				arr.push(m);
 	 		}
 			else{
-				if(key==="EXT_ATTRIBUTES")
+				if(key==="EXT_ATTRIBUTES"&&value!==null)
 				{
-					l.module.attributes = Object(Object.values(value)) as Dictionary;
+					l.module.attributes = Object((value)) as Dictionary;
 				}
 				else if(key==="EXT_STATIC_ATTRIBUTES")
 				{
-					l.module.s_attributes = Object(Object.values(value)) as Dictionary;
+					l.module.s_attributes = Object((value)) as Dictionary;
 				}
 				else if(key==="EXT_METHODS")
 				{
-					l.module.methods = Object(Object.values(value)) as Dictionary;
+					l.module.methods = Object((value)) as Dictionary;
 				}
 				else if(key==="EXT_STATIC_METHODS")
 				{
-					l.module.s_methods = Object(Object.values(value)) as Dictionary;
+					l.module.s_methods = Object((value)) as Dictionary;
 				}
 				else if(key==="EXT_FUNCTIONS")
 				{
-					l.module.functions = Object(Object.values(value)) as Dictionary;
+					l.module.functions = Object((value)) as Dictionary;
 				}
 			}
 		}
@@ -104,6 +83,115 @@ function parse_modules(dump: Object): Layer[] {
 	return parsed;
 }
 
+export function activate(context: vscode.ExtensionContext) {
+
+	const popup = vscode.commands.registerCommand('test.extension', () => {
+		vscode.window.showInformationMessage('test running :3');
+	});
+
+	let raw_data : string = "";
+	try {
+		raw_data = fs.readFileSync(path.join(__dirname, '../data.json'), 'utf8');
+	} catch (err) {
+		console.error(err);
+	}
+
+	let dump : Object = JSON.parse(raw_data);
+	let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
+	console.log(data);
+	
+	const completion = vscode.languages.registerCompletionItemProvider(
+		'python',
+		{
+			provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+
+				const line = document.lineAt(position).text.slice(0, position.character);
+				let token: string = line.substring(line.lastIndexOf(" ")+1, position.character);
+				let arr: vscode.CompletionItem[] = [];
+
+				// to do : add some flags if found stuff since returning doesn't short circuit anymore,
+				// will make stuff faster
+				if (token.startsWith('bpy.')) {
+					if(token.endsWith('bpy.')){
+						data.forEach(function (child) {
+							arr.push(new vscode.CompletionItem(child.module.name, vscode.CompletionItemKind.Property));
+						});
+					}
+					else{
+						data.forEach(function (child) {
+						if(token.startsWith('bpy.' + child.module.name + ".")){
+							if(token.endsWith('bpy.' + child.module.name + ".")){
+								Object.keys(child.module.attributes).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Property));
+								});
+								Object.keys(child.module.s_attributes).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Property));
+								});
+								Object.keys(child.module.methods).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Method));
+								});
+								Object.keys(child.module.s_methods).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Method));
+								});
+								Object.keys(child.module.functions).forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild, vscode.CompletionItemKind.Method));
+								});
+								child.children.forEach(function (gchild) {
+									arr.push(new vscode.CompletionItem(gchild.name, vscode.CompletionItemKind.Property));
+								});
+							}
+							else{
+								// this is probably a task for morning abra
+							}
+						}
+						});
+					}
+					return arr;
+				}
+				return undefined;
+			}
+		},
+		'.'
+	);
+	const hover = vscode.languages.registerHoverProvider(
+		'python', 
+		{
+			provideHover(document, position, token) {
+				const range = document.getWordRangeAtPosition(position);
+				const word = document.getText(range);
+				const line = document.lineAt(position).text;
+				if (word === "join" && line.search("os.path.")!==-1) {
+					return new vscode.Hover({
+						language: "python",
+						value: "hover"
+					});
+				}
+			}
+    	}
+	);
+
+	context.subscriptions.push(popup, completion);
+}
+
+// interfaces to work with hard coded values from before we got hardcoded values to test with
+// interface Struct
+// {
+//     name: string;
+//     children: Struct[];
+// 	return_type: Struct[];
+// }
+// const NULL : Struct = 
+// {
+//     name: "",
+//     children: [],
+// 	return_type: []
+// };
+// const bpy : Struct =
+// {
+//     name: "bpy",
+//     children: [],
+// 	return_type: []
+// };
 // old from before
 // function trav_children(node: Struct, token: string): Struct {
 // 	let substring: string = node.name;
@@ -152,85 +240,3 @@ function parse_modules(dump: Object): Layer[] {
 // 	}
 // 	return node;
 // }
-
-export function activate(context: vscode.ExtensionContext) {
-
-	const popup = vscode.commands.registerCommand('test.extension', () => {
-		vscode.window.showInformationMessage('test running :3');
-	});
-
-	let raw_data : string = "";
-	try {
-		raw_data = fs.readFileSync(path.join(__dirname, '../data.json'), 'utf8');
-	} catch (err) {
-		console.error(err);
-	}
-
-	let dump : Object = JSON.parse(raw_data);
-	// // layer 1: step down from bpy
-	// //let types_bpy : Object = Object.values(dump)[0]; etc
-	// // layer 2: step down from types: collection of modules usually, different for utils, etc
-	// // implicit in function calls
-	// // layer 3: modules
-	let data : Layer[] = parse_modules(Object.values(Object.values(dump)[0]));
-	console.log(data);
-	
-	const completion = vscode.languages.registerCompletionItemProvider(
-		'python',
-		{
-			provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-
-				const line = document.lineAt(position).text.slice(0, position.character);
-				let token: string = line.substring(line.lastIndexOf(" ")+1, position.character);
-
-				if (token.startsWith('bpy.types.ParticleSystem.')) {
-					let arr: vscode.CompletionItem[] = [];
-					Object.keys(data[0].children[0].attributes).forEach(function (child) {
-						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Property));
-					});
-					Object.keys(data[0].children[0].s_attributes).forEach(function (child) {
-						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Property));
-					});
-					Object.keys(data[0].children[0].methods).forEach(function (child) {
-						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
-					});
-					Object.keys(data[0].children[0].s_methods).forEach(function (child) {
-						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
-					});
-					Object.keys(data[0].children[0].functions).forEach(function (child) {
-						arr.push(new vscode.CompletionItem(child, vscode.CompletionItemKind.Method));
-					});
-					// old from before
-					// let node: Struct = trav_children(bpy, token);
-					// let arr: vscode.CompletionItem[] = [];
-					// if(node !== NULL){
-					// 	node.children.forEach(function (child) {
-					// 		arr.push(new vscode.CompletionItem(child.name));
-					// 	});
-					// }
-					return arr;
-				}
-				return undefined;
-			}
-		},
-		'.'
-	);
-	const hover = vscode.languages.registerHoverProvider(
-		'python', 
-		{
-			provideHover(document, position, token) {
-				const range = document.getWordRangeAtPosition(position);
-				const word = document.getText(range);
-				const line = document.lineAt(position).text;
-				if (word === "join" && line.search("os.path.")!==-1) {
-					return new vscode.Hover({
-						language: "python",
-						value: "hover"
-					});
-				}
-			}
-    	}
-	);
-
-	context.subscriptions.push(popup, completion);
-}
