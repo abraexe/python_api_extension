@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { fileFetch} from './fileFetch';
 import { DocumentationTreeProvider } from './documentationTreeProvider';
 import * as fs from 'fs';
 import path from 'path';
