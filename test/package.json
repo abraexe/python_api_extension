@@ -18,7 +18,23 @@
   },
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "nodeDependencies",
+          "name": "nodeDependencies"
+        }
+      ]
+    },
     "commands": [
+      {
+        "command": "test.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "test.disassemble",
+        "title": "View Disassembled Python Source"
+      },
       {
         "command": "test.extension",
         "title": "test-extension"
