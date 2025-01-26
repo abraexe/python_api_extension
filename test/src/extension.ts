@@ -1,25 +1,46 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { fileFetch } from './fileFetch';
+import { NodeDependenciesProvider } from './documentationTreeProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "test" is now active!');
+	// ===== TREE VIEW =======
+	const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+    ? vscode.workspace.workspaceFolders[0].uri.fsPath
+    : undefined;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('test.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Goodbye World from test!');
-	});
+	if (rootPath === undefined) {
+		vscode.window.showErrorMessage("There is no open workspace to search. Open a folder to begin.");
+	} else {
+		let treeProvider = new NodeDependenciesProvider(rootPath);
+		vscode.window.registerTreeDataProvider(
+			'nodeDependencies',
+			treeProvider
+		  );
+		context.subscriptions.push(vscode.window.createTreeView('nodeDependencies', {
+			treeDataProvider: treeProvider
+		  }));
+	}
 
-	context.subscriptions.push(disposable);
+	
+	// ======= OPEN A FILE IN TEXT EDITOR =======
+	context.subscriptions.push(vscode.commands.registerCommand('test.disassemble', async () => {
+		// This function is a mess
+		let result;
+		await vscode.window.showOpenDialog(fileFetch.dialogOptions).then(m => result = m);
+		if (result === undefined) {
+			vscode.window.showErrorMessage("File not found!");
+		}
+		else {
+			let uri: vscode.Uri = result;
+			fileFetch.openFile(uri.toString().substring(7));
+		}
+		
+	}));
 }
 
 // This method is called when your extension is deactivated
